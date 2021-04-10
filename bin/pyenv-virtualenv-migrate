@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+#
+# Summary: Migrate all virtualenvs from a Python version to another
+#
+# Usage: pyenv virtualenv-migrate [-d|-h] <from> <to>
+#
+#    -d  Attempt to remove the old virtualenv after migration.
+#        User would be prompted for confirmation.
+#    -f  Do not prompt at any step
+#    -h  Display help
+#
+
+set -e
+[ -n "$PYENV_DEBUG" ] && set -x
+
+# Provide pyenv completions
+if [ "$1" = "--complete" ]; then
+  exec pyenv-versions --bare
+fi
+
+if [ -z "$PYENV_ROOT" ]; then
+  PYENV_ROOT="${HOME}/.pyenv"
+fi
+
+usage() {
+  pyenv-help virtualenv-migrate 2>/dev/null
+  [ -z "$1" ] || exit "$1"
+}
+
+migration_failed() {
+  { echo
+    echo "VIRTUALENV MIGRATION FAILED"
+    echo
+    echo "Inspect or clean up the virtualenv: ${VENV_NAME}"
+    echo "  old: ${VENV_SRC}"
+    echo "  new: ${VENV_DST}"
+  } 1>&2
+  exit 1
+}
+
+
+# Parse arguments
+unset DELETE
+unset FORCE
+while getopts "dfh" arg; do
+  case $arg in
+    d) DELETE=true;;
+    f) FORCE="-f";;
+    h) usage 1
+  esac
+done
+src="${@:$OPTIND:1}"
+dst="${@:$OPTIND+1:1}"
+shift $((OPTIND-1))
+[ -n "$src" ] || usage 1
+[ -n "$dst" ] || usage 1
+
+pyenv-prefix "$src" 1>/dev/null 2>&1 || {
+  echo "pyenv: not an installed version: $src" 1>&2
+  usage 1
+}
+
+pyenv-prefix "$dst" 1>/dev/null 2>&1 || {
+  echo "pyenv: not an installed version: $dst" 1>&2
+  usage 1
+}
+
+VENVS=$(pyenv virtualenvs --skip-aliases | awk "/$src/{print \$1}")
+if [ -z "$VENVS" ]; then
+  echo "pyenv: no virtualenvs to migrate from python version: $src" 1>&2
+  usage 1
+fi
+
+if [ -z "$TMPDIR" ]; then
+  TMP="/tmp"
+else
+  TMP="${TMPDIR%/}"
+fi
+
+SEED="$(date "+%Y%m%d%H%M%S").$$"
+LOG_PATH="${TMP}/python-build.${SEED}.log"
+
+trap migration_failed ERR
+for VENV_SRC in $VENVS
+do
+  VENV_NAME=$(printf "%s" "${VENV_SRC}" | awk -F'/' '{print $3}' || exit 1)
+  VENV_DST=$(printf "%s" "${VENV_SRC}" | sed "s|${src}|${dst}|" || exit 1)
+
+  # Rename symlink to avoid clash while recreating virtualenv with the same name
+  VENV_SYMLINK="${PYENV_ROOT}/versions/${VENV_NAME}"
+  if [ -L "${VENV_SYMLINK}" ]; then
+    mv -f "${PYENV_ROOT}/versions/${VENV_NAME}" "${PYENV_ROOT}/versions/_${VENV_NAME}_${src}"
+  fi
+
+  printf "%s\n" "Migrating: ${VENV_SRC} -> ${VENV_DST}"
+  pyenv virtualenv $FORCE "${dst}" "${VENV_DST}"
+  pyenv migrate "${VENV_SRC}" "${VENV_DST}"
+  [ -n "$DELETE" ] && pyenv virtualenv-delete $FORCE "${VENV_SRC}" 1>/dev/null
+done
+pyenv-rehash
+trap - ERR
