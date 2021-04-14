@@ -1,7 +1,7 @@
 # pyenv-virtualenv-migrate
 
 pyenv-virtualenv-migrate is a [pyenv](https://github.com/pyenv/pyenv) plugin
-to provide a `pyenv virtualenv-migrate` command to migrate all virtualenvs from
+to provide a `pyenv virtualenv-migrate` command to migrate all virtual environments from
 a Python version to another.
 
 ## Installation
@@ -11,9 +11,9 @@ a Python version to another.
 Installing pyenv-virtualenv-migrate as a pyenv plugin will give you access to the
 `pyenv virtualenv-migrate` command.
 
-    $ git clone https://github.com/pyenv/pyenv-migrate.git $(pyenv root)/plugins/pyenv-migrate
-    $ git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
-    $ git clone https://github.com/ashwinvis/pyenv-virtualenv-migrate.git $(pyenv root)/plugins/pyenv-virtualenv-migrate
+    git clone https://github.com/pyenv/pyenv-migrate.git $(pyenv root)/plugins/pyenv-migrate
+    git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
+    git clone https://github.com/ashwinvis/pyenv-virtualenv-migrate.git $(pyenv root)/plugins/pyenv-virtualenv-migrate
 
 This will install the latest development version of pyenv-virtualenv-migrate into
 the `$(pyenv root)/plugins/pyenv-virtualenv-migrate` directory. From that directory, you
@@ -26,11 +26,11 @@ pull` to download the latest changes.
 ### Using `pyenv virtualenv-migrate` with pyenv
 
 pyenv-virtualenv-migrate uses `pyenv virtualenv` and `pyenv migrate` to
-recreate virtualenvs with a different Python version.
+recreate virtual environments with a different Python version. For example, to
+migrate virtual environments based on Python `3.8.9` to `3.9.4`, use `pyenv
+virtualenv-migrate` as follows:
 
-To migrate installed virtualenv from `3.8.9` to `3.9.4`, use `pyenv virtualenv-migrate`.
-
-    $ pyenv virtualenv-migrate 3.8.9 3.9.4
+    pyenv virtualenv-migrate 3.8.9 3.9.4
 
 ## Version History
 
