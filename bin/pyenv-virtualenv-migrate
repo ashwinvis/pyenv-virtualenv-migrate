@@ -23,7 +23,7 @@ if [ -z "$PYENV_ROOT" ]; then
 fi
 
 usage() {
-  pyenv-help virtualenv-migrate 2>/dev/null
+  pyenv-help virtualenv-migrate [venv name regex] 2>/dev/null
   [ -z "$1" ] || exit "$1"
 }
 
@@ -51,6 +51,13 @@ while getopts "dfh" arg; do
 done
 src="${@:$OPTIND:1}"
 dst="${@:$OPTIND+1:1}"
+regex="${@:$OPTIND+2:1}"
+shift $((OPTIND-1))
+
+if [ -n "$regex" ]; then
+    GREP_CMD="| grep -e $regex"
+fi
+
 shift $((OPTIND-1))
 [ -n "$src" ] || usage 1
 [ -n "$dst" ] || usage 1
@@ -65,7 +72,7 @@ pyenv-prefix "$dst" 1>/dev/null 2>&1 || {
   usage 1
 }
 
-VENVS=$(pyenv virtualenvs --skip-aliases | awk "/$src/{print \$1}")
+VENVS=$(pyenv virtualenvs --skip-aliases | awk "/$src/{print \$1}" $GREP_CMD)
 if [ -z "$VENVS" ]; then
   echo "pyenv: no virtualenvs to migrate from python version: $src" 1>&2
   usage 1
