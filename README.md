@@ -11,7 +11,7 @@ a Python version to another.
 Installing pyenv-virtualenv-migrate as a pyenv plugin will give you access to the
 `pyenv virtualenv-migrate` command.
 
-    git clone https://github.com/pyenv/pyenv-migrate.git $(pyenv root)/plugins/pyenv-migrate
+    git clone https://github.com/pyenv/pyenv-pip-migrate.git $(pyenv root)/plugins/pyenv-pip-migrate
     git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
     git clone https://github.com/ashwinvis/pyenv-virtualenv-migrate.git $(pyenv root)/plugins/pyenv-virtualenv-migrate
 
