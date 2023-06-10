@@ -2,12 +2,13 @@
 #
 # Summary: Migrate all virtualenvs from a Python version to another
 #
-# Usage: pyenv virtualenv-migrate [-d|-h] <from> <to>
+# Usage: pyenv virtualenv-migrate [-d|-f|-h] [-o ONLY_VENV] <from> <to>
 #
-#    -d  Attempt to remove the old virtualenv after migration.
-#        User would be prompted for confirmation.
-#    -f  Do not prompt at any step
-#    -h  Display help
+#    -d             Attempt to remove the old virtualenv after migration.
+#                   User would be prompted for confirmation.
+#    -f             Do not prompt at any step
+#    -o ONLY_VENV   Only this virtualenv
+#    -h             Display help
 #
 
 set -e
@@ -42,11 +43,14 @@ migration_failed() {
 # Parse arguments
 unset DELETE
 unset FORCE
-while getopts "dfh" arg; do
+unset ONLY_VENV
+while getopts "dfo:h" arg; do
   case $arg in
     d) DELETE=true;;
     f) FORCE="-f";;
-    h) usage 1
+    o) ONLY_VENV="${OPTARG}";;
+    h) usage 1;;
+    *) usage 1;;
   esac
 done
 src="${@:$OPTIND:1}"
@@ -65,20 +69,31 @@ pyenv-prefix "$dst" 1>/dev/null 2>&1 || {
   usage 1
 }
 
-VENVS=$(pyenv virtualenvs --skip-aliases | awk "/$src/{print \$1}")
+if [ -z "${ONLY_VENV}" ]; then
+    VENVS=$(pyenv virtualenvs --skip-aliases | awk "/$src/{print \$1}")
+else
+    is_substring=$(echo "${ONLY_VENV}" | grep "${src}" || echo "")
+    if [ -n "${is_substring}" ]; then
+        VENVS="${ONLY_VENV}"
+    else
+        VENVS="${src}/envs/${ONLY_VENV}"
+    fi
+    echo "Only migrating ${VENVS} ..."
+fi
+
 if [ -z "$VENVS" ]; then
   echo "pyenv: no virtualenvs to migrate from python version: $src" 1>&2
   usage 1
 fi
 
-if [ -z "$TMPDIR" ]; then
-  TMP="/tmp"
-else
-  TMP="${TMPDIR%/}"
-fi
+# if [ -z "$TMPDIR" ]; then
+#   TMP="/tmp"
+# else
+#   TMP="${TMPDIR%/}"
+# fi
 
-SEED="$(date "+%Y%m%d%H%M%S").$$"
-LOG_PATH="${TMP}/python-build.${SEED}.log"
+# SEED="$(date "+%Y%m%d%H%M%S").$$"
+# LOG_PATH="${TMP}/python-build.${SEED}.log"
 
 trap migration_failed ERR
 for VENV_SRC in $VENVS

@@ -32,6 +32,10 @@ virtualenv-migrate` as follows:
 
     pyenv virtualenv-migrate 3.8.9 3.9.4
 
+To migrate only one particular virtualenv, for exampled named `my-env`:
+
+    pyenv virtualenv-migrate -o my-env 3.8.9 3.9.4
+
 ## Version History
 
 #### 0.0.1
