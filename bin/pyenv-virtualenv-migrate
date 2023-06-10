@@ -86,15 +86,6 @@ if [ -z "$VENVS" ]; then
   usage 1
 fi
 
-# if [ -z "$TMPDIR" ]; then
-#   TMP="/tmp"
-# else
-#   TMP="${TMPDIR%/}"
-# fi
-
-# SEED="$(date "+%Y%m%d%H%M%S").$$"
-# LOG_PATH="${TMP}/python-build.${SEED}.log"
-
 trap migration_failed ERR
 for VENV_SRC in $VENVS
 do
