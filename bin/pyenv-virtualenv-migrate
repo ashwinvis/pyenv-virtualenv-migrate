@@ -101,7 +101,11 @@ do
   printf "%s\n" "Migrating: ${VENV_SRC} -> ${VENV_DST}"
   pyenv virtualenv $FORCE "${dst}" "${VENV_DST}"
   pyenv migrate "${VENV_SRC}" "${VENV_DST}"
-  [ -n "$DELETE" ] && pyenv virtualenv-delete $FORCE "${VENV_SRC}" 1>/dev/null
+
+  if [ -n "$DELETE" ]; then
+    pyenv virtualenv-delete $FORCE "${VENV_SRC}" 1>/dev/null
+    rm -f "${PYENV_ROOT}/versions/_${VENV_NAME}_${src}"
+  fi
 done
 pyenv-rehash
 trap - ERR
